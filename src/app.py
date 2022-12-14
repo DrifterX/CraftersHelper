@@ -1,9 +1,12 @@
 from gevent import monkey
 monkey.patch_all()
 from dash import html, dcc ,Dash, ctx
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 from dash import dash_table as dt
+from plotly import graph_objects as go
+from plotly.subplots import make_subplots
+import time
 
 import environment
 import functions as f
@@ -16,7 +19,7 @@ datacenters = []
 
 for x in servers.keys():
     datacenters.append(x)
-    
+
 allItems = f.getDataFrameCsv(itemsDataLocation)
 allItemNames = allItems['Name']
 
@@ -88,7 +91,7 @@ app.layout = html.Div([
             dt.DataTable(id="recipeTableRaw", 
                          style_data_conditional=[{
                             'if' : {
-                                'filter_query' : '{numNeeded} = 0'
+                                'filter_query' : "{Number needed to craft} = 0"
                             },
                             'backgroundColor' : 'darkblue',
                             'color' : 'white'
@@ -97,7 +100,16 @@ app.layout = html.Div([
             dt.DataTable(id="recipeTable",
                          style_data_conditional=[{
                             'if' : {
-                                'filter_query' : '{numNeeded} = 0'
+                                'filter_query' : '{Number needed to craft} = 0'
+                            },
+                            'backgroundColor' : 'darkblue',
+                            'color' : 'white'
+                         }]),
+            html.Br(),
+            dt.DataTable(id="currentSales",
+                         style_data_conditional=[{
+                            'if' : {
+                                'filter_query' : '{Last time viewed} = 0'
                             },
                             'backgroundColor' : 'darkblue',
                             'color' : 'white'
@@ -109,25 +121,25 @@ app.layout = html.Div([
 ], style={'padding': '2px 2px'})
 
 @app.callback(
-    Output('outputGraph', 'figure'),
     Output('displayButton', 'n_clicks'),
     Output('infoTable', 'data'),
     Output('recipeTableRaw', 'data'),
     Output('recipeTable', 'data'),
-    Input('itemList', 'value'),
-    Input('numOfHours', 'value'),
-    Input('daysSlider', 'value'),
-    Input('includeMats', 'value'),
-    Input('includeSales', 'value'),
-    Input('onlyHQ', 'value'),
+    Output('currentSales', 'data'),
+    Output('outputGraph', 'figure'),
     Input('displayButton', 'n_clicks'),
-    Input('dataCenterSelected', 'value'),
-    Input('serverList', 'value')
+    State('itemList', 'value'),
+    State('numOfHours', 'value'),
+    State('daysSlider', 'value'),
+    State('includeMats', 'value'),
+    State('includeSales', 'value'),
+    State('onlyHQ', 'value'),
+    State('dataCenterSelected', 'value'),
+    State('serverList', 'value')
 )
 
-def uponClick(itemList, numOfHours, daysSlider, includeMats, includeSales, onlyHQ, n_clicks, dataCenterSelected, serverList):
+def uponClick(n_clicks, itemList, numOfHours, daysSlider, includeMats, includeSales, onlyHQ, dataCenterSelected, serverList):
     if n_clicks is None: raise PreventUpdate
-    
 
     if includeMats == "Yes": showMaterials = True
     else: showMaterials = False
@@ -159,8 +171,9 @@ def uponClick(itemList, numOfHours, daysSlider, includeMats, includeSales, onlyH
     infoTable = f.updateInfoTable(itemDFList, totalResults)
     recipeTableRaw = f.updateRecipeTable(matDFListRaw, itemList)
     recipeTable = f.updateRecipeTable(matDFList, itemList)
+    priceTable = f.updatePriceTable(itemDFList, matDFList, returnServer, hqOnly= onlyReturnHQ)
     
-    return fig, None, infoTable, recipeTableRaw, recipeTable
+    return None, infoTable, recipeTableRaw, recipeTable, priceTable, fig
 
 @app.callback(
     Output('serverList', 'options'),
@@ -171,5 +184,6 @@ def populateServers(dataCenterSelected):
 
     if dataCenterSelected != None:
         return servers[dataCenterSelected]
+
 
 app.run(host="0.0.0.0", port=8050)

@@ -300,7 +300,7 @@ def fetchSalesDataRecipe(itemName, datacenter, numOfWeeks = 1, rawMatsOnly = Tru
 def fetchCurrentMarket(itemList, datacenter, hqOnly=True):
 
     itemIDList = []
-    for x in itemList:
+    for x in itemList['itemName'].unique():
         itemIDList.append(getItem(x))
 
     uRI = "https://universalis.app/api/v2/" + str(datacenter) + "/"
@@ -308,7 +308,7 @@ def fetchCurrentMarket(itemList, datacenter, hqOnly=True):
         uRI = uRI + str(item['itemID']) + ","
 
     uRI = uRI.removesuffix(",")
-    if hqOnly == True: "?hq=" + str(hqOnly)
+    if hqOnly == True: uRI = uRI + "?hq=" + str(hqOnly)
 
     try:
         jsonOut = restRequest(uRIList=uRI, maxTries=15)
@@ -316,15 +316,20 @@ def fetchCurrentMarket(itemList, datacenter, hqOnly=True):
     except: return
 
     currentListings = []
-    for number in jsonOut['itemIDs']:
-        for nam in itemIDList:
-            if nam['itemID'] == number: thisItemName = nam['itemName']
-        for x in jsonOut['items'][str(number)]['listings']:
-            x['itemName'] = thisItemName
-            x['itemID'] = number
-            currentListings.append(x)
+    if list(jsonOut.keys())[0] == 'itemIDs':
+        for number in jsonOut['itemIDs']:
+            for nam in itemIDList:
+                if nam['itemID'] == number: thisItemName = nam['itemName']
+            for x in jsonOut['items'][str(number)]['listings']:
+                x['itemName'] = thisItemName
+                x['itemID'] = number
+                currentListings.append(x)
+        return pd.DataFrame(data=currentListings)
 
-    return pd.DataFrame(data=currentListings)
+    else:
+        jsonOutDF = pd.DataFrame(jsonOut['listings'])
+        jsonOutDF['itemName'] = itemIDList[0]['itemName']
+        return jsonOutDF 
 
 #Used to add a line to the displayed graph
 def addLineToGraph(inputDF, inputFigure, showSales):
@@ -410,8 +415,8 @@ def updateRecipeTable(matDFList, itemList):
 
     theChildren = []
     j = 0
-    thisRow = {"itemName" : itemList[j],"numNeeded" : 0, 
-               "pricePerUnit" : 0, "timestamp" : 0, "newTimestamp" : 0}
+    thisRow = {"Material" : itemList[j],"Number needed to craft" : 0, 
+               "Last Sell Price" : 0, "Oldest Transaction Found" : 0, "Latest Transaction Found" : 0}
     theChildren.append(thisRow)
     for matDF in matDFList:
 
@@ -453,23 +458,33 @@ def updateRecipeTable(matDFList, itemList):
             
         j = j + 1
         if len(matDFList) > j:
-                thisRow = {"itemName" : itemList[j],"numNeeded" : 0, 
-                           "pricePerUnit" : 0, "timestamp" : 0, "newTimestamp" : 0}
+                thisRow = {"Material" : itemList[j],"Number needed to craft" : 0, 
+                           "Last Sell Price" : 0, "Oldest Transaction Found" : 0, "Latest Transaction Found" : 0}
                 theChildren.append(thisRow)
 
     theChildrenDF = pd.DataFrame(theChildren)
     return theChildrenDF.to_dict('records')
 
 #TODO Implement current market data prices
-def updatePriceTable(itemDFList, matDFList, hqOnly = False):
+def updatePriceTable(itemDFList, matDFList, datacenter, hqOnly = False):
     
+    itemPricesList = []
     for df in itemDFList:
-        currentMark = fetchCurrentMarket(df, hqOnly=hqOnly)
+        currentMark = fetchCurrentMarket(df, datacenter, hqOnly=hqOnly)
         sortedDF = currentMark.sort_values('pricePerUnit', ascending=False)
-        sortedDF.groupby(['itemName', 'worldName'])
+        groupedAndSorted = sortedDF.groupby(['itemName', 'worldName'])
+        thisRow = {"Item Name" : df['itemName'][0], "Last time viewed" : 0, "Server of listing" : "", "hq" : False}
+        itemPricesList.append(thisRow)
+        for i in range(0, len(groupedAndSorted.head(1))):
+            thisRow = {"Item Name" : currentMark['itemName'][groupedAndSorted.head(1).index[i]], 
+            "Last time viewed" : pd.to_datetime(currentMark['lastReviewTime'][groupedAndSorted.head(1).index[i]], unit="s"), 
+            "Server of listing" : currentMark['worldName'][groupedAndSorted.head(1).index[i]], 
+            "hq" : currentMark['hq'][groupedAndSorted.head(1).index[i]],
+            "Current lowest sale price" : currentMark['pricePerUnit'][groupedAndSorted.head(1).index[i]]}
+            itemPricesList.append(thisRow)
 
-
-    return
+    itemPricesDF = pd.DataFrame(itemPricesList)
+    return itemPricesDF.to_dict('records')
 
 allItems = getDataFrameCsv(itemsDataLocation)
 allItemNames = allItems['Name']
