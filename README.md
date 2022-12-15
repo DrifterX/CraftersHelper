@@ -9,13 +9,3 @@ See the [Dash Documentation](https://dash.plotly.com/introduction) for more info
 ## Running the App
 
 Run `src/app.py` and navigate to http://127.0.0.1:8050/ in your browser.
-
-## Building your own Docker Container
-
-`docker build -t craftershelper .`
-
-`docker run -d -p 8050:8050 craftershelper`
-
-## Running the Docker Container with Image from Docker Hub
-
-`docker run -p 8050:8050 anguskong/craftershelper`
