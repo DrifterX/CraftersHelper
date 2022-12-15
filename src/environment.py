@@ -1,2 +1,2 @@
-itemsDataLocation = "./data/ItemReduced.csv"
-serverByID = "./data/serversByID.csv"
+itemsDataLocation = "/CraftersHelper/src/data/ItemReduced.csv"
+serverByID = "/CraftersHelper/src/data/serversByID.csv"
