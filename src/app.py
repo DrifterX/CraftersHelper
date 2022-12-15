@@ -171,7 +171,7 @@ def uponClick(n_clicks, itemList, numOfHours, daysSlider, includeMats, includeSa
     infoTable = f.updateInfoTable(itemDFList, totalResults)
     recipeTableRaw = f.updateRecipeTable(matDFListRaw, itemList)
     recipeTable = f.updateRecipeTable(matDFList, itemList)
-    priceTable = f.updatePriceTable(itemDFList, matDFList, returnServer, hqOnly= onlyReturnHQ)
+    priceTable = f.updatePriceTable(itemDFList, matDFListRaw, returnServer, hqOnly= onlyReturnHQ)
     
     return None, infoTable, recipeTableRaw, recipeTable, priceTable, fig
 
