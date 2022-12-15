@@ -127,18 +127,18 @@ app.layout = html.Div([
     Output('recipeTable', 'data'),
     Output('currentSales', 'data'),
     Output('outputGraph', 'figure'),
+    Input('itemList', 'value'),
+    Input('numOfHours', 'value'),
+    Input('daysSlider', 'value'),
+    Input('includeMats', 'value'),
+    Input('includeSales', 'value'),
     Input('displayButton', 'n_clicks'),
-    State('itemList', 'value'),
-    State('numOfHours', 'value'),
-    State('daysSlider', 'value'),
-    State('includeMats', 'value'),
-    State('includeSales', 'value'),
-    State('onlyHQ', 'value'),
-    State('dataCenterSelected', 'value'),
-    State('serverList', 'value')
+    Input('onlyHQ', 'value'),
+    Input('dataCenterSelected', 'value'),
+    Input('serverList', 'value')
 )
 
-def uponClick(n_clicks, itemList, numOfHours, daysSlider, includeMats, includeSales, onlyHQ, dataCenterSelected, serverList):
+def uponClick(itemList, numOfHours, daysSlider, includeMats, includeSales, onlyHQ, n_clicks, dataCenterSelected, serverList):
     if n_clicks is None: raise PreventUpdate
 
     if includeMats == "Yes": showMaterials = True
@@ -147,7 +147,9 @@ def uponClick(n_clicks, itemList, numOfHours, daysSlider, includeMats, includeSa
     else: showSales = False
     if onlyHQ == "Yes": onlyReturnHQ = True
     else: onlyReturnHQ = False
-    if serverList is None: returnServer = dataCenterSelected
+    if serverList is None: 
+        returnServer = dataCenterSelected
+        worldOnly = False
     else: 
         returnServer = serverList
         worldOnly = True
