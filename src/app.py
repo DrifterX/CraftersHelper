@@ -148,7 +148,9 @@ def uponClick(n_clicks, itemList, numOfHours, daysSlider, includeMats, includeSa
     if onlyHQ == "Yes": onlyReturnHQ = True
     else: onlyReturnHQ = False
     if serverList is None: returnServer = dataCenterSelected
-    else: returnServer = serverList
+    else: 
+        returnServer = serverList
+        worldOnly = True
     
     matDFListRaw = []
     matDFList = []
@@ -171,7 +173,7 @@ def uponClick(n_clicks, itemList, numOfHours, daysSlider, includeMats, includeSa
     infoTable = f.updateInfoTable(itemDFList, totalResults)
     recipeTableRaw = f.updateRecipeTable(matDFListRaw, itemList)
     recipeTable = f.updateRecipeTable(matDFList, itemList)
-    priceTable = f.updatePriceTable(itemDFList, matDFListRaw, returnServer, hqOnly= onlyReturnHQ)
+    priceTable = f.updatePriceTable(itemDFList, matDFListRaw, returnServer, hqOnly= onlyReturnHQ, worldOnly=worldOnly)
     
     return None, infoTable, recipeTableRaw, recipeTable, priceTable, fig
 

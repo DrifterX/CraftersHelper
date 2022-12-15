@@ -472,36 +472,67 @@ def updateRecipeTable(matDFList, itemList):
     return theChildrenDF.to_dict('records')
 
 #TODO Implement current market data prices
-def updatePriceTable(itemDFList, matDFList, datacenter, hqOnly = False):
+def updatePriceTable(itemDFList, matDFList, datacenter, hqOnly = False, worldOnly = False):
     
     itemPricesList = []
-    for df in itemDFList:
-        currentMark = fetchCurrentMarket(df, datacenter, hqOnly=hqOnly)
-        sortedDF = currentMark.sort_values('pricePerUnit', ascending=False)
-        groupedAndSorted = sortedDF.groupby(['itemName', 'worldName'])
-        thisRow = {"Item Name" : df['itemName'][0], "Last time viewed" : 0, "Server of listing" : "", "hq" : False, 'Current lowest sale price' : 0}
-        itemPricesList.append(thisRow)
-        for i in range(0, len(groupedAndSorted.head(1))):
-            thisRow = {"Item Name" : currentMark['itemName'][groupedAndSorted.head(1).index[i]], 
-            "Last time viewed" : pd.to_datetime(currentMark['lastReviewTime'][groupedAndSorted.head(1).index[i]], unit="s"), 
-            "Server of listing" : currentMark['worldName'][groupedAndSorted.head(1).index[i]], 
-            "hq" : currentMark['hq'][groupedAndSorted.head(1).index[i]],
-            "Current lowest sale price" : groupedAndSorted['pricePerUnit'].min()[i]}
-            itemPricesList.append(thisRow)
+    if worldOnly == False:
+        for df in itemDFList:
+            currentMark = fetchCurrentMarket(df, datacenter, hqOnly=hqOnly)
+            sortedDF = currentMark.sort_values('pricePerUnit', ascending=False)
+            groupedAndSorted = sortedDF.groupby(['itemName', 'worldName'])
+            #thisRow = {"Item Name" : df['itemName'][0], "Last time viewed" : 0, "Server of listing" : "", "hq" : False, 'Current lowest sale price' : 0}
+            #itemPricesList.append(thisRow)
+            for i in range(0, len(groupedAndSorted.head(1))):
+                thisRow = {"Item Name" : currentMark['itemName'][groupedAndSorted.head(1).index[i]], 
+                "Last time viewed" : pd.to_datetime(currentMark['lastReviewTime'][groupedAndSorted.head(1).index[i]], unit="s"), 
+                "Server of listing" : currentMark['worldName'][groupedAndSorted.head(1).index[i]], 
+                "hq" : currentMark['hq'][groupedAndSorted.head(1).index[i]],
+                "Current lowest sale price" : groupedAndSorted['pricePerUnit'].min()[i]}
+                itemPricesList.append(thisRow)
 
-    for df in matDFList:
-        currentMark = fetchCurrentMarket(df, datacenter, hqOnly=False)
-        sortedDF = currentMark.sort_values('pricePerUnit', ascending=False)
-        groupedAndSorted = sortedDF.groupby(['itemName', 'worldName'])
-        #thisRow = {"Item Name" : df['itemName'][0], "Last time viewed" : 0, "Server of listing" : "", "hq" : False}
-        #itemPricesList.append(thisRow)
-        for i in range(0, len(groupedAndSorted.head(1))):
-            thisRow = {"Item Name" : currentMark['itemName'][groupedAndSorted.head(1).index[i]], 
-            "Last time viewed" : pd.to_datetime(currentMark['lastReviewTime'][groupedAndSorted.head(1).index[i]], unit="s"), 
-            "Server of listing" : currentMark['worldName'][groupedAndSorted.head(1).index[i]], 
-            "hq" : currentMark['hq'][groupedAndSorted.head(1).index[i]],
-            "Current lowest sale price" : groupedAndSorted['pricePerUnit'].min()[i]}
+        for df in matDFList:
+            currentMark = fetchCurrentMarket(df, datacenter, hqOnly=False)
+            sortedDF = currentMark.sort_values('pricePerUnit', ascending=False)
+            groupedAndSorted = sortedDF.groupby(['itemName', 'worldName'])
+            #thisRow = {"Item Name" : df['itemName'][0], "Last time viewed" : 0, "Server of listing" : "", "hq" : False}
+            #itemPricesList.append(thisRow)
+            for i in range(0, len(groupedAndSorted.head(1))):
+                thisRow = {"Item Name" : currentMark['itemName'][groupedAndSorted.head(1).index[i]], 
+                "Last time viewed" : pd.to_datetime(currentMark['lastReviewTime'][groupedAndSorted.head(1).index[i]], unit="s"), 
+                "Server of listing" : currentMark['worldName'][groupedAndSorted.head(1).index[i]], 
+                "hq" : currentMark['hq'][groupedAndSorted.head(1).index[i]],
+                "Current lowest sale price" : groupedAndSorted['pricePerUnit'].min()[i]}
+                itemPricesList.append(thisRow)
+
+    else:
+        for df in itemDFList:
+            currentMark = fetchCurrentMarket(df, datacenter, hqOnly=hqOnly)
+            sortedDF = currentMark.sort_values('pricePerUnit', ascending=False)
+            groupedAndSorted = sortedDF.groupby(['itemName'])
+            thisRow = {"Item Name" : df['itemName'][0], "Last time viewed" : 0, "Server of listing" : "", "hq" : False, 'Current lowest sale price' : 0}
             itemPricesList.append(thisRow)
+            for i in range(0, len(groupedAndSorted.head(1))):
+                thisRow = {"Item Name" : currentMark['itemName'][groupedAndSorted.head(1).index[i]], 
+                "Last time viewed" : pd.to_datetime(currentMark['lastReviewTime'][groupedAndSorted.head(1).index[i]], unit="s"), 
+                "Server of listing" : datacenter, 
+                "hq" : currentMark['hq'][groupedAndSorted.head(1).index[i]],
+                "Current lowest sale price" : groupedAndSorted['pricePerUnit'].min()[i]}
+                itemPricesList.append(thisRow)
+
+        for df in matDFList:
+            currentMark = fetchCurrentMarket(df, datacenter, hqOnly=False)
+            sortedDF = currentMark.sort_values('pricePerUnit', ascending=False)
+            groupedAndSorted = sortedDF.groupby(['itemName'])
+            #thisRow = {"Item Name" : df['itemName'][0], "Last time viewed" : 0, "Server of listing" : "", "hq" : False}
+            #itemPricesList.append(thisRow)
+            for i in range(0, len(groupedAndSorted.head(1))):
+                thisRow = {"Item Name" : currentMark['itemName'][groupedAndSorted.head(1).index[i]], 
+                "Last time viewed" : pd.to_datetime(currentMark['lastReviewTime'][groupedAndSorted.head(1).index[i]], unit="s"), 
+                "Server of listing" : datacenter, 
+                "hq" : currentMark['hq'][groupedAndSorted.head(1).index[i]],
+                "Current lowest sale price" : groupedAndSorted['pricePerUnit'].min()[i]}
+                itemPricesList.append(thisRow)
+
 
     itemPricesDF = pd.DataFrame(itemPricesList)
     itemPricesDF = itemPricesDF.sort_values(['Item Name', 'Current lowest sale price'])
