@@ -1,2 +1,5 @@
-itemsDataLocation = "./data/ItemReduced.csv"
-serverByID = "./data/serversByID.csv"
+itemsDataLocation = "../data/ItemReduced.csv"
+serverByID = "../data/serversByID.csv"
+rarefiedItems = "../data/rarefiedMaterials.csv"
+scripValues = "../data/scripValues.csv"
+scriptItemCosts = "../data/scripItemCosts.csv"
