@@ -64,7 +64,7 @@ app.layout = html.Div([
         ]),
         html.Div([
             html.Br(),
-            html.Button("Display Results", id = 'displayButton')
+            html.Button("Display Results", id = 'displayButton', n_clicks=None)
         ])
     ], style={'width' : '20%', 'display' : 'inline-block', 'valign' : 'top','span' : 1}),
 
@@ -132,8 +132,8 @@ app.layout = html.Div([
     Input('daysSlider', 'value'),
     Input('includeMats', 'value'),
     Input('includeSales', 'value'),
-    Input('displayButton', 'n_clicks'),
     Input('onlyHQ', 'value'),
+    Input('displayButton', 'n_clicks'),
     Input('dataCenterSelected', 'value'),
     Input('serverList', 'value')
 )

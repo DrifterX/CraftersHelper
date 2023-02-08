@@ -296,7 +296,7 @@ def fetchSalesDataRecipe(itemName, datacenter, numOfWeeks = 1, rawMatsOnly = Tru
     salesHistoryDF = pd.DataFrame(data = salesHistory)
     return salesHistoryDF
 
-#TODO Implement this. Use universalis to get current sales data.
+#Use universalis to get current sales data.
 def fetchCurrentMarket(itemList, datacenter, hqOnly=True):
 
     itemIDList = []
@@ -336,6 +336,25 @@ def fetchCurrentMarket(itemList, datacenter, hqOnly=True):
         jsonOutDF = pd.DataFrame(jsonOut['listings'])
         jsonOutDF['itemName'] = itemIDList[0]['itemName']
         return jsonOutDF 
+
+def findCurrentMatsPrice(itemID, datacenter, hqOnly):
+    recipeID = getItemByID(itemID)['Recipes'][0]['ID']
+    recipe = getRecipe(recipeID, rawMatsOnly= True)
+    recipeDF = pd.DataFrame(recipe)
+
+    currentMarketData = fetchCurrentMarket(recipeDF, datacenter, hqOnly=hqOnly)
+
+    recipeModified = []
+    for item in recipe:
+        thisRow = item
+        minPrice = currentMarketData[currentMarketData['itemName'] == item['itemName']]['pricePerUnit'].min()
+        thisRow['modifiedPrice'] = minPrice * item['amountNeeded']
+        thisRow['quantity'] = currentMarketData[currentMarketData['itemName'] == item['itemName']][currentMarketData['pricePerUnit'] == minPrice]['quantity'].item()
+        thisRow['serverName'] = currentMarketData[currentMarketData['itemName'] == item['itemName']][currentMarketData['pricePerUnit'] == minPrice]['worldName'].item()
+        recipeModified.append(thisRow)
+
+    
+    return
 
 #Used to add a line to the displayed graph
 def addLineToGraph(inputDF, inputFigure, showSales):
